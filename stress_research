@@ -1,0 +1,2898 @@
+{
+ "nbformat": 4,
+ "nbformat_minor": 0,
+ "metadata": {
+  "colab": {
+   "provenance": []
+  },
+  "kernelspec": {
+   "name": "python3",
+   "display_name": "Python 3"
+  },
+  "language_info": {
+   "name": "python"
+  }
+ },
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "outputs": [],
+   "source": [
+    "# TOGGLE THIS TO TRUE IF WORKING LOCALLY (PYCHARM)\n",
+    "import datetime\n",
+    "\n",
+    "work_colab = False"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n"
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import datetime as dt\n",
+    "import numpy as np\n",
+    "import os\n",
+    "import datetime as dt"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n"
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "outputs": [],
+   "source": [
+    "if work_colab:\n",
+    "  from google.colab import drive\n",
+    "  drive.mount('/content/drive', force_remount=True)\n",
+    "  root_path = '/content/drive/MyDrive/dev/'\n",
+    "  %cd '/content/drive/MyDrive/dev/healthcare_research'\n",
+    "else:\n",
+    "  root_path = 'G:/My Drive/dev/'"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n"
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "outputs": [],
+   "source": [
+    "# username = 'jumpingsphinx'\n",
+    "# repository = 'stress_research'\n",
+    "# !git clone https://{git_token}@github.com/{username}/{repository}\n",
+    "# %cd stress_research/\n",
+    "# !git status"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n"
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "outputs": [],
+   "source": [
+    "# import os\n",
+    "# os.environ['KAGGLE_CONFIG_DIR'] = \"/content/drive/MyDrive/dev/kaggle_data\"\n",
+    "# cd '/content/drive/MyDrive/dev/kaggle_data'\n",
+    "# !kaggle datasets download -d vlbthambawita/pmdata-a-sports-logging-dataset\n",
+    "# !unzip \\*.zip  && rm *.zip"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n"
+    }
+   }
+  },
+  {
+   "cell_type": "markdown",
+   "source": [
+    "fitbit [folder]\n",
+    "\n",
+    "exercise.json: describes each activity in more detail. It contains the date with start and stop time, time in different activity levels, type of activity and various performance metrics depending a bit on type of exercise, e.g., for running, it contains distance, time, steps, calories, speed and pace.\n",
+    "\n",
+    "calories.json: shows how many calories the person have burned the last minute.\n",
+    "\n",
+    "steps.json: displays the number of steps per minute.\n",
+    "\n",
+    "distance.json: gives the distance moved per minute. Distance seems to be in centimeters.\n",
+    "\n",
+    "sedentary_minutes.json: sums up the number of sedentary minutes per day.\n",
+    "\n",
+    "lightly_active_minutes.json: sums up the number of lightly active minutes per day.\n",
+    "\n",
+    "moderately_active_minutes.json: sums up the number of moderately active minutes per day.\n",
+    "\n",
+    "very_active_minutes.json: sums up the number of very active minutes per day.\n",
+    "\n",
+    "heart_rate.json: shows the number of heart beats per minute (bpm) at a given time.\n",
+    "\n",
+    "resting_heart_rate.json: gives the resting heart rate per day.\n",
+    "\n",
+    "time_in_heart_rate_zones.json: gives the number of minutes in different heart rate zoned. Using the common formula of 220 minus your age, Fitbit will calculate your maximum heart rate and then create three target heart rate zones fat burn (50 to 69 percent of your max heart rate), cardio (70 to 84 percent of your max heart rate), and peak (85 to 100 percent of your max heart rate) - based off that number.\n",
+    "\n",
+    "sleep_score.csv: helps understand the sleep each night, so you can see trends in the sleep patterns. It contains an overall 0-100 score made up from composition, revitalization and duration scores, the number of deep sleep minutes, the resting heart rate and a restlessness score.\n",
+    "\n",
+    "sleep.json: is a per sleep breakdown of the sleep into periods of light, deep, rem sleeps and time awake.\n",
+    "\n",
+    "\n",
+    "googledocs [folder]\n",
+    "\n",
+    "reporting.csv: contains one line per report including the date reported for, a timestamp of the report submission time, the eaten meals (breakfast, lunch, dinner and evening meal), the participants weight this day, the number of glasses drunk, and whether one has consumed alcohol.\n",
+    "\n",
+    "\n",
+    "pmsys [folder]\n",
+    "\n",
+    "injury.csv: shows injuries with a time and date and corresponding injury locations and a minor and major severity.\n",
+    "\n",
+    "srpe.csv: contains a training session’s end-time, type of activity, the perceived exertion (RPE), and the duration in the number of minutes. This is, for example, used to calculate the sessions training load or sRPE (RPE×duration).\n",
+    "\n",
+    "wellness.csv: includes parameters like time and date, fatigue, mood, readiness, sleep duration (number of hours), sleep quality, soreness (and soreness area), and stress. Fatigue, sleep quality, soreness, stress, and mood all have a 1-5 scale. The score 3 is normal, and 1-2 are scores below normal and 4-5 are scores above normal. Sleep length is just a measure of how long the sleep was in hours, and readiness (scale 0-10) is an overall subjective measure of how ready are you to exercise, i.e., 0 means not ready at all and 10 indicates that you cannot feel any better and are ready for anything!"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%% md\n"
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "participant:  p01 , data_item:  reporting\n",
+      "participant:  p01 , data_item:  wellness\n",
+      "participant:  p01 , data_item:  injury\n",
+      "participant:  p01 , data_item:  srpe\n",
+      "participant:  p01 , data_item:  sleep_score\n",
+      "participant:  p01 , data_item:  heart_rate\n",
+      "participant:  p01 , data_item:  calories\n",
+      "participant:  p01 , data_item:  very_active_minutes\n",
+      "participant:  p01 , data_item:  time_in_heart_rate_zones\n",
+      "participant:  p01 , data_item:  steps\n",
+      "participant:  p01 , data_item:  sedentary_minutes\n",
+      "participant:  p01 , data_item:  moderately_active_minutes\n",
+      "participant:  p01 , data_item:  resting_heart_rate\n",
+      "participant:  p01 , data_item:  sleep\n",
+      "participant:  p01 , data_item:  distance\n",
+      "participant:  p01 , data_item:  exercise\n",
+      "participant:  p01 , data_item:  lightly_active_minutes\n",
+      "participant:  p16 , data_item:  srpe\n",
+      "participant:  p16 , data_item:  injury\n",
+      "participant:  p16 , data_item:  wellness\n",
+      "participant:  p16 , data_item:  reporting\n",
+      "participant:  p16 , data_item:  distance\n",
+      "participant:  p16 , data_item:  lightly_active_minutes\n",
+      "participant:  p16 , data_item:  calories\n",
+      "participant:  p16 , data_item:  heart_rate\n",
+      "participant:  p16 , data_item:  very_active_minutes\n",
+      "participant:  p16 , data_item:  steps\n",
+      "participant:  p16 , data_item:  time_in_heart_rate_zones\n",
+      "participant:  p16 , data_item:  exercise\n",
+      "participant:  p16 , data_item:  sleep_score\n",
+      "participant:  p16 , data_item:  sedentary_minutes\n",
+      "participant:  p16 , data_item:  moderately_active_minutes\n",
+      "participant:  p16 , data_item:  resting_heart_rate\n",
+      "participant:  p16 , data_item:  sleep\n",
+      "participant:  p15 , data_item:  srpe\n",
+      "participant:  p15 , data_item:  wellness\n",
+      "participant:  p15 , data_item:  injury\n",
+      "participant:  p15 , data_item:  sleep_score\n",
+      "participant:  p15 , data_item:  moderately_active_minutes\n",
+      "participant:  p15 , data_item:  sleep\n",
+      "participant:  p15 , data_item:  sedentary_minutes\n",
+      "participant:  p15 , data_item:  resting_heart_rate\n"
+     ]
+    }
+   ],
+   "source": [
+    "path = r'H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata'\n",
+    "data = {}\n",
+    "df = pd.DataFrame()\n",
+    "for root, dirs, files in os.walk(path):\n",
+    "  participant = str.split(root, '\\\\')[-2]\n",
+    "  data_source = str.split(root, '\\\\')[-1]\n",
+    "  # print(participant, data_source)\n",
+    "  if data_source in ['fitbit', 'pmsys', 'googledocs']:\n",
+    "    for file in files:\n",
+    "      data_item = str.split(file, '.')[0]\n",
+    "      data_type = str.split(file, '.')[1]\n",
+    "      if data_type in ['json', 'csv']:\n",
+    "        if data_type == 'json':\n",
+    "          df = pd.read_json(os.path.join(root, file))\n",
+    "          # print('JSON', os.path.join(root, file))\n",
+    "        if data_type == 'csv':\n",
+    "          df = pd.read_csv(os.path.join(root, file))\n",
+    "          # print('CSV', os.path.join(root, file))\n",
+    "        df['participant'] = participant\n",
+    "        df['data_source'] = data_source\n",
+    "        print('participant: ', participant, ', data_item: ', data_item)\n",
+    "        if data_item in data:\n",
+    "          data[data_item] = pd.concat([data[data_item], df], ignore_index=True)\n",
+    "        else:\n",
+    "          data[data_item] = df"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing exercise.json"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# exercise_df = pd.read_json('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p02\\\\fitbit\\exercise.json')\n",
+    "# exercise_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# exercise_df.columns"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['exercise']['start_time'] = pd.to_datetime(data['exercise'].startTime)\n",
+    "data['exercise']['end_time'] = pd.to_datetime(data['exercise'].start_time) + data['exercise'].activeDuration.apply(lambda x: dt.timedelta(milliseconds=x))\n",
+    "data['exercise']['datetime'] = data['exercise']['start_time']\n",
+    "data['exercise']['date'] = data['exercise']['datetime'].apply(dt.datetime.date)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['exercise'].head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['exercise'].columns"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['exercise'][['vo2Max', 'datetime', 'activityName']].dropna()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing distance.json"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# distance_df = pd.read_json('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p02\\\\fitbit\\distance.json')\n",
+    "# distance_df.head()\n",
+    "# distance seems to be distance"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "markdown",
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%% md\n"
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['distance']['datetime'] = pd.to_datetime(data['distance'].dateTime)\n",
+    "data['distance']['date'] = data['distance']['datetime'].apply(dt.datetime.date)\n",
+    "data['distance'].rename(columns={'value': 'distance'}, inplace=True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['distance'].head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing calories.json"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# calories_df = pd.read_json('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p02\\\\fitbit\\calories.json')\n",
+    "# calories_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['calories']['datetime'] = pd.to_datetime(data['calories'].dateTime)\n",
+    "data['calories']['date'] = data['calories']['datetime'].apply(dt.datetime.date)\n",
+    "data['calories'].rename(columns={'value': 'calories'}, inplace=True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['calories'].head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing heart_rate.json"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "markdown",
+   "source": [
+    "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8749560/\n",
+    "\n",
+    "https://www.mdpi.com/1424-8220/21/10/3461/htm\n",
+    "\n",
+    "https://assets.firstbeat.com/firstbeat/uploads/2015/10/How-to-Analyze-Stress-from-Heart-Rate-Variability.pdf\n",
+    "\n",
+    "HOW TO COMPUTE HRV FROM BPM OBSERVATIONS\n",
+    "https://compscipal.medium.com/exploring-heart-rate-variability-hrv-d7a3d66bc4f2\n",
+    "\n",
+    "https://support.mindwaretech.com/2017/09/all-about-hrv-part-2-interbeat-intervals-and-time-domain-stats/\n",
+    "\n"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%% md\n"
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# heart_rate_df = pd.read_json('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p04\\\\fitbit\\heart_rate.json')\n",
+    "# heart_rate_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# heart_rate_df['datetime'] = pd.to_datetime(heart_rate_df['dateTime'])"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# heart_rate_df['bpm'] = heart_rate_df['value'].apply(lambda x: x['bpm'])"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# heart_rate_ts = heart_rate_df.pivot_table(values='bpm', index='datetime')"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# heart_rate_ts['ibi'] = 60000/heart_rate_ts['bpm']"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# heart_rate_ts['time_interval']= heart_rate_ts.index.to_series().diff().astype('timedelta64[s]')"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# heart_rate_ts.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# nn_ts = heart_rate_ts.resample('5min').mean()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# heart_rate_ts.iloc[-2000:][['bpm']].plot()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# nn_ts.resample('D').mean()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['heart_rate']['datetime'] = pd.to_datetime(data['heart_rate'].dateTime)\n",
+    "data['heart_rate']['date'] = data['heart_rate']['datetime'].apply(dt.datetime.date)\n",
+    "data['heart_rate'].rename(columns={'value': 'heart_rate'}, inplace=True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['heart_rate']['bpm'] = data['heart_rate']['heart_rate'].apply(lambda x: x['bpm'])\n",
+    "data['heart_rate']['ibi'] = 60000 / data['heart_rate']['bpm']"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['heart_rate'].head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing resting_heart_rate.json"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# resting_heart_rate_df = pd.read_json('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p04\\\\fitbit\\\\resting_heart_rate.json')\n",
+    "# resting_heart_rate_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['resting_heart_rate']['datetime'] = pd.to_datetime(data['resting_heart_rate'].dateTime)\n",
+    "data['resting_heart_rate']['date'] = data['resting_heart_rate']['datetime'].apply(dt.datetime.date)\n",
+    "data['resting_heart_rate']['resting_heart_rate'] = data['resting_heart_rate'].value.apply(lambda x: x['value'])"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing time_in_heart_rate_zones.json"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# time_in_heart_rate_zones_df = pd.read_json('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p04\\\\fitbit\\\\time_in_heart_rate_zones.json')\n",
+    "# time_in_heart_rate_zones_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['time_in_heart_rate_zones']['datetime'] = pd.to_datetime(data['time_in_heart_rate_zones'].dateTime)\n",
+    "data['time_in_heart_rate_zones']['date'] = data['time_in_heart_rate_zones']['datetime'].apply(dt.datetime.date)\n",
+    "data['time_in_heart_rate_zones']['below_default_zone_1'] = data['time_in_heart_rate_zones'].value.apply(lambda x: x['valuesInZones']['BELOW_DEFAULT_ZONE_1'])\n",
+    "data['time_in_heart_rate_zones']['in_default_zone_1'] = data['time_in_heart_rate_zones'].value.apply(lambda x: x['valuesInZones']['IN_DEFAULT_ZONE_1'])\n",
+    "data['time_in_heart_rate_zones']['in_default_zone_2'] = data['time_in_heart_rate_zones'].value.apply(lambda x: x['valuesInZones']['IN_DEFAULT_ZONE_2'])\n",
+    "data['time_in_heart_rate_zones']['in_default_zone_3'] = data['time_in_heart_rate_zones'].value.apply(lambda x: x['valuesInZones']['IN_DEFAULT_ZONE_3'])"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['time_in_heart_rate_zones'].head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['time_in_heart_rate_zones'].columns"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing sleep_score.csv"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# sleep_score_df = pd.read_csv('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p04\\\\fitbit\\sleep_score.csv')\n",
+    "# sleep_score_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['sleep_score']['datetime'] = pd.to_datetime(data['sleep_score']['timestamp']).apply(lambda x: x.replace(tzinfo=None))"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['sleep_score']['date'] = data['sleep_score']['datetime'].apply(dt.datetime.date)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['sleep_score'].head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['sleep_score'].columns"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing sleep.json"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# sleep_df = pd.read_json('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p02\\\\fitbit\\sleep.json')\n",
+    "# sleep_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['sleep']['datetime'] = pd.to_datetime(data['sleep'].dateOfSleep)\n",
+    "data['sleep']['date'] = data['sleep']['datetime'].apply(dt.datetime.date)\n",
+    "data['sleep']['start_time'] = pd.to_datetime(data['sleep'].startTime)\n",
+    "data['sleep']['end_time'] = pd.to_datetime(data['sleep'].endTime)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['sleep'].columns"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing sedentary_minutes.json"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# sedentary_minutes_df = pd.read_json('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p02\\\\fitbit\\sedentary_minutes.json')\n",
+    "# sedentary_minutes_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['sedentary_minutes']['datetime'] = pd.to_datetime(data['sedentary_minutes'].dateTime)\n",
+    "data['sedentary_minutes']['date'] = data['sedentary_minutes']['datetime'].apply(dt.datetime.date)\n",
+    "data['sedentary_minutes'].rename(columns={'value': 'sedentary_minutes'}, inplace=True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['sedentary_minutes'].head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing lightly_active_minutes.json"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# lightly_active_minutes_df = pd.read_json('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p02\\\\fitbit\\lightly_active_minutes.json')\n",
+    "# lightly_active_minutes_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['lightly_active_minutes']['datetime'] = pd.to_datetime(data['lightly_active_minutes'].dateTime)\n",
+    "data['lightly_active_minutes']['date'] = data['lightly_active_minutes']['datetime'].apply(dt.datetime.date)\n",
+    "data['lightly_active_minutes'].rename(columns={'value': 'lightly_active_minutes'}, inplace=True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['lightly_active_minutes'].head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing moderately_active_minutes.json"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# moderately_active_minutes_df = pd.read_json('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p04\\\\fitbit\\moderately_active_minutes.json')\n",
+    "# moderately_active_minutes_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['moderately_active_minutes']['datetime'] = pd.to_datetime(data['moderately_active_minutes'].dateTime)\n",
+    "data['moderately_active_minutes']['date'] = data['moderately_active_minutes']['datetime'].apply(dt.datetime.date)\n",
+    "data['moderately_active_minutes'].rename(columns={'value': 'moderately_active_minutes'}, inplace=True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['moderately_active_minutes'].head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing very_active_minutes.json"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# very_active_minutes_df = pd.read_json('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p04\\\\fitbit\\\\very_active_minutes.json')\n",
+    "# very_active_minutes_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['very_active_minutes']['datetime'] = pd.to_datetime(data['very_active_minutes'].dateTime)\n",
+    "data['very_active_minutes']['date'] = data['very_active_minutes']['datetime'].apply(dt.datetime.date)\n",
+    "data['very_active_minutes'].rename(columns={'value': 'very_active_minutes'}, inplace=True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['very_active_minutes'].head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing steps.json"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# steps_df = pd.read_json('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p04\\\\fitbit\\steps.json')\n",
+    "# steps_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['steps']['datetime'] = pd.to_datetime(data['steps'].dateTime)\n",
+    "data['steps']['date'] = data['steps']['datetime'].apply(dt.datetime.date)\n",
+    "data['steps'].rename(columns={'value': 'steps'}, inplace=True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['steps'].head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing reporting.csv"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# reporting_df = pd.read_csv('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p01\\googledocs\\\\reporting.csv')\n",
+    "# reporting_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['reporting']['datetime'] = pd.to_datetime(data['reporting'].timestamp)\n",
+    "data['reporting']['date'] = data['reporting']['datetime'].apply(dt.datetime.date)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['reporting'].head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing wellness.csv data"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# wellness_df = pd.read_csv('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p01\\pmsys\\wellness.csv')\n",
+    "# wellness_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['wellness']['datetime'] = pd.to_datetime(data['wellness'].effective_time_frame).apply(lambda x: x.replace(tzinfo=None))\n",
+    "data['wellness']['date'] = data['wellness']['datetime'].apply(dt.datetime.date)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['wellness'].columns"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing injury.csv data"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# injury_df = pd.read_csv('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p04\\pmsys\\injury.csv')\n",
+    "# injury_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['injury']['datetime'] = pd.to_datetime(data['injury'].effective_time_frame).apply(lambda x: x.replace(tzinfo=None))\n",
+    "data['injury']['date'] = data['injury']['datetime'].apply(dt.datetime.date)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['injury'].injuries.unique()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# post-processing sRPE.csv"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# srpe_df = pd.read_csv('H:\\My Drive\\dev\\kaggle_data\\osfstorage-archive\\pmdata\\p04\\pmsys\\srpe.csv')\n",
+    "# srpe_df.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['srpe']['datetime'] = pd.to_datetime(data['srpe'].end_date_time).apply(lambda x: x.replace(tzinfo=None))\n",
+    "data['srpe']['date'] = data['srpe']['datetime'].apply(dt.datetime.date)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['srpe'].head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# declare the low frequency and high frequency data frame"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "start_time = dt.datetime.now()\n",
+    "end_time = dt.datetime(2000, 1, 1, 0)\n",
+    "\n",
+    "for k in data.keys():\n",
+    "  # print(k)\n",
+    "  start_time = min(start_time, data[k].datetime.min())\n",
+    "  end_time = max(end_time, data[k].datetime.max())\n",
+    "\n",
+    "print('start_time: ', start_time)\n",
+    "print('end_time: ', end_time)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "lf_ts = pd.DataFrame(index = pd.date_range(start=start_time.date(), end=end_time.date(), freq='1D'))\n",
+    "hf_ts = pd.DataFrame(index = pd.date_range(start=start_time.date(), end=end_time.date(), freq='5min'))"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "hf_ts.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# pivot and resample all the dataframes onto lf_ts or hf_ts time index"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "X = {}\n",
+    "X_hf = {}"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "p = 'p05'"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "for p in ['p01', 'p02', 'p03', 'p04', 'p05', 'p06', 'p07', 'p08', 'p09', 'p10', 'p11', 'p12', 'p13', 'p14', 'p15', 'p16']:\n",
+    "  X[p] = lf_ts\n",
+    "  X[p] = X[p].join(data['wellness'][data['wellness']['participant'] == p].pivot_table(index='date', values=['fatigue', 'mood', 'readiness', 'sleep_duration_h', 'sleep_quality', 'soreness', 'soreness_area', 'stress']))\n",
+    "  X[p] = X[p].join(data['steps'][data['steps']['participant'] == p].pivot_table(index='date', values=['steps'], aggfunc=sum))\n",
+    "  X[p] = X[p].join(data['sedentary_minutes'][data['sedentary_minutes']['participant'] == p].pivot_table(index='date', values=['sedentary_minutes']))\n",
+    "  X[p] = X[p].join(data['lightly_active_minutes'][data['lightly_active_minutes']['participant'] == p].pivot_table(index='date', values=['lightly_active_minutes']))\n",
+    "  X[p] = X[p].join(data['moderately_active_minutes'][data['moderately_active_minutes']['participant'] == p].pivot_table(index='date', values=['moderately_active_minutes']))\n",
+    "  X[p] = X[p].join(data['very_active_minutes'][data['very_active_minutes']['participant'] == p].pivot_table(index='date', values=['very_active_minutes']))\n",
+    "  X[p] = X[p].join(data['sleep'][data['sleep']['participant'] == p].pivot_table(index='date', values=['duration', 'minutesToFallAsleep', 'minutesAsleep', 'minutesAwake', 'minutesAfterWakeup', 'timeInBed', 'efficiency']))\n",
+    "  X[p] = X[p].join(data['sleep_score'][data['sleep_score']['participant'] == p].pivot_table(index='date', values=['overall_score', 'composition_score', 'revitalization_score', 'duration_score', 'deep_sleep_in_minutes', 'restlessness']))\n",
+    "  X[p] = X[p].join(data['time_in_heart_rate_zones'][data['time_in_heart_rate_zones']['participant'] == p].pivot_table(index='date', values=['below_default_zone_1', 'in_default_zone_1', 'in_default_zone_2', 'in_default_zone_3']))\n",
+    "  X[p] = X[p].join(data['resting_heart_rate'][data['resting_heart_rate']['participant'] == p].pivot_table(index='date', values=['resting_heart_rate']))\n",
+    "  X[p] = X[p].join(data['calories'][data['calories']['participant'] == p].pivot_table(index='date', values=['calories'], aggfunc=sum))\n",
+    "  X[p] = X[p].join(data['distance'][data['distance']['participant'] == p].pivot_table(index='date', values=['distance'], aggfunc=sum))\n",
+    "  X[p] = X[p].join(data['exercise'][data['exercise']['participant'] == p].pivot_table(index='date', values=['activityName'], aggfunc='count'))\n",
+    "  X[p].rename(columns={'activityName': 'activity_count'}, inplace=True)\n",
+    "  # compute HRV stats (5 min IBI mean, 24-hour std dev)\n",
+    "  ibi_mean_ts = data['heart_rate'][data['heart_rate']['participant'] == p].pivot_table(index='datetime', values=['ibi']).resample('5min').mean()\n",
+    "  X[p] = X[p].join(ibi_mean_ts.resample('D').std())\n",
+    "  X[p].rename(columns={'ibi': 'hrv'}, inplace=True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# X[p].dropna().head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "sr_stress_hrv_corr = {}\n",
+    "lf_corr_matrix = pd.DataFrame(index=['fatigue', 'mood', 'stress', 'very_active_minutes', 'overall_score', 'hrv'], columns=['fatigue', 'mood', 'stress', 'very_active_minutes', 'overall_score', 'hrv'], data=0)\n",
+    "# p12 has NaN in correlation matrix, so we exclude it\n",
+    "p_list = ['p01', 'p02', 'p03', 'p04', 'p05', 'p06', 'p07', 'p08', 'p09', 'p10', 'p11', 'p13', 'p14', 'p15', 'p16']\n",
+    "for p in p_list:\n",
+    "  sr_stress_hrv_corr[p] = X[p]['stress'].corr(X[p]['hrv'])\n",
+    "  lf_corr_matrix = lf_corr_matrix.add(X[p][['fatigue', 'mood', 'stress', 'very_active_minutes', 'overall_score', 'hrv']].corr())\n",
+    "sr_stress_hrv_corr_df = pd.DataFrame.from_dict(sr_stress_hrv_corr, orient='index', columns=['sr_stress_hrv_corr'])\n",
+    "lf_corr_matrix /= len(p_list)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "sr_stress_hrv_corr_df.plot.bar()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "X['p08'][['fatigue', 'mood', 'stress', 'very_active_minutes', 'overall_score', 'hrv']].corr()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "lf_corr_matrix"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# compute the high-frequency stats"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# compute high-frequency HRV\n",
+    "# we are collecting heart-rate data every 9 seconds on average, i.e. a mean of 10 ibi values will take 1.6 minutes and we can get high frequency HRV with 16.7 minute cadence; We'll use 2 min IBI mean, 20 min std dev as hrv_hf"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "for p in ['p01', 'p02', 'p03', 'p04', 'p05', 'p06', 'p07', 'p08', 'p09', 'p10', 'p11', 'p12', 'p13', 'p14', 'p15', 'p16']:\n",
+    "  bpm_mean_hf = data['heart_rate'][data['heart_rate']['participant'] == p].pivot_table(index='datetime', values=['bpm']).resample('2min').mean()\n",
+    "  bpm_mean_hf['bpm_ma'] = bpm_mean_hf['bpm'].rolling(window=30).mean()\n",
+    "  bpm_mean_hf['bpm_std'] = bpm_mean_hf['bpm'].rolling(window=30).std()\n",
+    "  bpm_mean_hf['bpm_zscore'] = (bpm_mean_hf['bpm'] - bpm_mean_hf['bpm_ma'])/(bpm_mean_hf['bpm_std'])\n",
+    "  # We study the percentage of time heart rate > 2 z-scores. ~3-5% of the time.\n",
+    "  # We define bpm_zscore > 2 to be a state of elevated heart rate\n",
+    "  # We define potential_stress to be an indicator function for stress (good or bad)\n",
+    "  bpm_mean_hf['elevated_hr'] = (bpm_mean_hf['bpm_zscore'] > 2) * 1\n",
+    "\n",
+    "  ibi_mean_hf = data['heart_rate'][data['heart_rate']['participant'] == p].pivot_table(index='datetime', values=['ibi']).resample('2min').mean()\n",
+    "  hrv_hf = ibi_mean_hf.resample('20 min').std().resample('2min').mean().fillna(method='pad')\n",
+    "  # TODO: replace the flat fill with rolling mean fill\n",
+    "  hrv_hf.rename(columns={'ibi': 'hrv_hf'}, inplace=True)\n",
+    "  # how does high-frequency HRV correlate with heart_rate (uncomment to see)\n",
+    "  # hrv_hf.join(ibi_mean_hf)[0:288].plot.scatter(x='ibi', y='hrv_hf')\n",
+    "  hrv_hf['hrv_hf_ma'] = hrv_hf['hrv_hf'].rolling(window=30).mean()\n",
+    "  hrv_hf['hrv_hf_std'] = hrv_hf['hrv_hf'].rolling(window=30).std()\n",
+    "  hrv_hf['hrv_hf_zscore'] = (hrv_hf['hrv_hf'] - hrv_hf['hrv_hf_ma'])/(hrv_hf['hrv_hf_std'])\n",
+    "  hrv_hf['elevated_hrv_hf'] = (hrv_hf['hrv_hf_zscore'] > 2) * 1\n",
+    "\n",
+    "  # convert exercise data to get active_minutes\n",
+    "  active_periods = data['exercise'][data['exercise']['participant'] == p][['activityName', 'start_time', 'end_time']]\n",
+    "  activity_hf = pd.DataFrame(index= ibi_mean_hf.index)\n",
+    "  activity_hf['is_active_period'] = 0\n",
+    "  for idx, row in active_periods.iterrows():\n",
+    "    activity_hf['is_active_period'][(activity_hf.index > row['start_time']) & (activity_hf.index < row['end_time'])] = 1\n",
+    "\n",
+    "  X_hf[p] = bpm_mean_hf.join(ibi_mean_hf).join(hrv_hf).join(activity_hf)\n",
+    "  X_hf[p]['inactive_hrv_hf_elevation'] = (1 - X_hf[p]['is_active_period']) * X_hf[p]['elevated_hrv_hf']\n",
+    "  X_hf[p]['hrv_hf_trigger'] = X_hf[p]['inactive_hrv_hf_elevation'].diff() == 1\n",
+    "  X_hf[p]['date'] = X_hf[p].index.to_series().apply(dt.datetime.date)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# X_hf['p04'][['bpm', 'bpm_zscore', 'hrv_hf', 'hrv_hf_zscore']].corr()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "hrv_hf_zscore_matrix = X_hf['p12'].dropna().pivot_table(index=['is_active_period', 'elevated_hr'], values='hrv_hf_zscore')\n",
+    "hrv_hf_zscore_matrix_dict ={'p12': hrv_hf_zscore_matrix}\n",
+    "hrv_hf_zscore_anxious = {'p12': hrv_hf_zscore_matrix.loc[0,1]}\n",
+    "hrv_hf_zscore_active = {'p12': hrv_hf_zscore_matrix.loc[1,1]}\n",
+    "p_list = ['p01', 'p02', 'p03', 'p04', 'p05', 'p06', 'p07', 'p08', 'p09', 'p10', 'p11', 'p13', 'p14', 'p15', 'p16']\n",
+    "for p in p_list:\n",
+    "  hrv_hf_zscore_matrix_dict[p] = X_hf[p].dropna().pivot_table(index=['is_active_period', 'elevated_hr'], values='hrv_hf_zscore')\n",
+    "  hrv_hf_zscore_matrix = hrv_hf_zscore_matrix.add(hrv_hf_zscore_matrix_dict[p])\n",
+    "  hrv_hf_zscore_anxious[p] = hrv_hf_zscore_matrix_dict[p].loc[0,1]\n",
+    "  hrv_hf_zscore_active[p] = hrv_hf_zscore_matrix_dict[p].loc[1,1]\n",
+    "hrv_hf_zscore_matrix /= len(p_list) + 1\n",
+    "hrv_hf_zscore_anxious_df = pd.DataFrame.from_dict(hrv_hf_zscore_anxious, orient='index')\n",
+    "hrv_hf_zscore_active_df = pd.DataFrame.from_dict(hrv_hf_zscore_active, orient='index')\n",
+    "hrv_hf_zscore_anxious_df.rename(columns={'hrv_hf_zscore': 'hrv_hf_zscore_anxious'}, inplace=True)\n",
+    "hrv_hf_zscore_active_df.rename(columns={'hrv_hf_zscore': 'hrv_hf_zscore_active'}, inplace=True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "hrv_hf_zscore_anxious_df.join(hrv_hf_zscore_active_df).plot(kind='bar', figsize=(20,10))"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "hrv_hf_zscore_matrix"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "X_hf['p05'].dropna().pivot_table(index=['is_active_period', 'elevated_hr'], values=['hrv_hf'], aggfunc=np.mean)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# this above is pretty encouraging. we see that heart rate elevation when you are inactive is resulting in more irregular IBI!"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# stantistical testing of result"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "active_hrv_hf_zscores = []\n",
+    "anxious_hrv_hf_zscores = []\n",
+    "p_list = ['p01', 'p02', 'p03', 'p04', 'p05', 'p06', 'p07', 'p08', 'p09', 'p10', 'p11', 'p12', 'p13', 'p14', 'p15', 'p16']\n",
+    "for p in p_list:\n",
+    "  active_hrv_hf_zscores.extend(X_hf[p][(X_hf[p]['is_active_period']==1) & (X_hf[p]['elevated_hr']==1)]['hrv_hf_zscore'].values)\n",
+    "  anxious_hrv_hf_zscores.extend(X_hf[p][(X_hf[p]['is_active_period']==0) & (X_hf[p]['elevated_hr']==1)]['hrv_hf_zscore'].values)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "active_hrv_hf_zscores_df = pd.DataFrame(active_hrv_hf_zscores, columns=['hrv_hf_zscore'])\n",
+    "active_hrv_hf_zscores_df['segment'] = 'active'\n",
+    "anxious_hrv_hf_zscores_df = pd.DataFrame(anxious_hrv_hf_zscores, columns=['hrv_hf_zscore'])\n",
+    "anxious_hrv_hf_zscores_df['segment'] = 'anxious'"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "active_hrv_hf_zscores_df['hrv_hf_zscore'].describe()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "anxious_hrv_hf_zscores_df['hrv_hf_zscore'].describe()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "from scipy.stats import ttest_ind"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "ttest_ind(active_hrv_hf_zscores_df['hrv_hf_zscore'], anxious_hrv_hf_zscores_df['hrv_hf_zscore'], equal_var=False)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "active_hrv_hf_zscores_df['hrv_hf_zscore'].hist(density=True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "anxious_hrv_hf_zscores_df['hrv_hf_zscore'].hist(density=True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "tmp = X_hf[p].dropna().pivot_table(index=['date'], values='hrv_hf_trigger', aggfunc=np.sum)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "tmp.head()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "tmp.join(X[p]['stress']).plot.scatter(x='stress', y='hrv_hf_trigger')"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "X[p].plot.scatter(x='stress', y='hrv')"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "hrv_hf[0:1000]['hrv_hf_ma'].plot()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "bpm_mean_hf[0:1000]['elevated_hr'].plot()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "hrv_hf[0:1000]['elevated_hrv_hf'].plot()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "activity_hf[0:1000]['is_active_period'].plot()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "data['sleep_score'].datetime.min()"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "start_time"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "calories_01 = pd.read_json(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/fitbit/calories.json')\n",
+    "calories_01.rename(columns = {'value' : 'calories'}, inplace = True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "distance_01 = pd.read_json(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/fitbit/distance.json')\n",
+    "distance_01.rename(columns={'value': 'distance'}, inplace=True)"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "exercise_01 = pd.read_json(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/fitbit/exercise.json')\n",
+    "exercise_01['startTime'] = pd.to_datetime(exercise_01['startTime'], infer_datetime_format=True)\n",
+    "exercise_01.rename(columns={'startTime': 'dateTime'}, inplace=True)\n",
+    "exercise_01['dateTime'] = exercise_01['dateTime'].dt.round(\"D\")\n",
+    "del exercise_01['lastModified']\n",
+    "del exercise_01['originalStartTime']\n",
+    "del exercise_01['tcxLink']\n",
+    "del exercise_01['distanceUnit']\n",
+    "del exercise_01['shouldFetchDetails']\n",
+    "del exercise_01['hasGps']\n",
+    "del exercise_01['activityTypeId']\n",
+    "del exercise_01['logId']\n",
+    "exercise_01\n",
+    "\n",
+    "#Not going to merge exercise into the master dataframe as the primary key used for all other dataframes(dateTime) doesn't exist in this table and is instead split into start time and original start time - we need to find out how to merge this"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "heart_rate_01 = pd.read_json(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/fitbit/heart_rate.json')\n",
+    "heart_rate_01.rename(columns={'value': 'heart_rate'}, inplace=True)\n",
+    "heart_rate_01\n",
+    "\n",
+    "# Will merge this into the master dataframe once we calculate HRV from this"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "lightly_active_minutes_01 = pd.read_json(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/fitbit/lightly_active_minutes.json')\n",
+    "lightly_active_minutes_01.rename(columns={'value': 'lightly_active_minutes'}, inplace=True)\n",
+    "\n",
+    "moderately_active_minutes_01 = pd.read_json(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/fitbit/moderately_active_minutes.json')\n",
+    "moderately_active_minutes_01.rename(columns={'value': 'moderately_active_minutes'}, inplace=True)\n",
+    "\n",
+    "very_active_minutes_01 = pd.read_json(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/fitbit/very_active_minutes.json')\n",
+    "very_active_minutes_01.rename(columns={'value': 'very_active_minutes'}, inplace=True)\n",
+    "\n",
+    "sedentary_minutes_01 = pd.read_json(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/fitbit/sedentary_minutes.json')\n",
+    "sedentary_minutes_01.rename(columns={'value': 'sedentary_minutes'}, inplace=True)\n",
+    "\n",
+    "resting_heart_rate_01 = pd.read_json(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/fitbit/resting_heart_rate.json')\n",
+    "resting_heart_rate_01.rename(columns={'value': 'resting_heart_rate'}, inplace=True)\n",
+    "\n",
+    "sleep_01 = pd.read_json(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/fitbit/sleep.json')\n",
+    "sleep_01.rename(columns={'value': 'sleep', 'dateOfSleep' : 'dateTime'}, inplace=True)\n",
+    "sleep_01['dateTime'] = pd.to_datetime(sleep_01['dateTime'], infer_datetime_format=True)\n",
+    "del sleep_01['logId']\n",
+    "del sleep_01['infoCode']\n",
+    "\n",
+    "time_in_heart_rate_zones_01 = pd.read_json(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/fitbit/time_in_heart_rate_zones.json')\n",
+    "time_in_heart_rate_zones_01.rename(columns={'value': 'steps'}, inplace=True)\n",
+    "\n",
+    "reporting_01 = pd.read_csv(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/googledocs/reporting.csv')\n",
+    "reporting_01['date'] = pd.to_datetime(reporting_01['date'], infer_datetime_format=True)\n",
+    "del reporting_01['timestamp']\n",
+    "reporting_01.rename(columns={'date':'dateTime'}, inplace=True)\n",
+    "#testing if the to_datetime works with merging these columns - it does!\n",
+    "\n",
+    "#getting rid of unnecessary columns in sleep table(all values are either meaningless or 0)\n",
+    "\n",
+    "#These all have the same dateTime format"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "temp_minute_activity = pd.merge(lightly_active_minutes_01, moderately_active_minutes_01, how = 'outer', on = 'dateTime')\n",
+    "temp2_minute_activity = pd.merge(temp_minute_activity, very_active_minutes_01, how = 'outer', on = 'dateTime')\n",
+    "temp3_minute_activity = pd.merge(temp2_minute_activity, sedentary_minutes_01, how = 'outer', on = 'dateTime')\n",
+    "temp4_minute_activity = pd.merge(temp3_minute_activity, resting_heart_rate_01, how = 'outer', on = 'dateTime')\n",
+    "temp5_minute_activity = pd.merge(temp4_minute_activity, time_in_heart_rate_zones_01, how = 'outer', on = 'dateTime')\n",
+    "temp6_minute_activity = pd.merge(temp5_minute_activity, sleep_01, how = 'outer', on = 'dateTime')\n",
+    "temp7_minute_activity = pd.merge(temp6_minute_activity, exercise_01, how = 'outer', on = 'dateTime')\n",
+    "master_01 = pd.merge(temp7_minute_activity, reporting_01, how = 'outer', on = 'dateTime')\n",
+    "master_01"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "sleep_score_01 = pd.read_csv(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/fitbit/sleep_score.csv')\n",
+    "sleep_score_01\n",
+    "\n",
+    "#This also has the same issue - timestamp isn't a datetime value."
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "steps_01 = pd.read_json(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/fitbit/steps.json')\n",
+    "steps_01.rename(columns={'value': 'steps'}, inplace=True)\n",
+    "steps_01\n",
+    "\n",
+    "#For steps, it makes sense to just merge them into the daily time lengths as that's the only stress that we get anyway - figure out how to do this"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "wellness_01 = pd.read_csv(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/pmsys/wellness.csv')\n",
+    "wellness_01"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "srpe_01 = pd.read_csv(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/pmsys/srpe.csv')\n",
+    "srpe_01.rename(columns={'end_date_time': 'effective_time_frame'}, inplace = True)\n",
+    "srpe_01"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "injury_01 = pd.read_csv(root_path + 'kaggle_data/osfstorage-archive/pmdata/p01/pmsys/injury.csv')\n",
+    "injury_01"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "temp_pmsys_01 = pd.merge(injury_01, srpe_01, how = 'outer', on = 'effective_time_frame')\n",
+    "pmsys_01 = pd.merge(temp_pmsys_01, wellness_01, how = 'outer', on = 'effective_time_frame')\n",
+    "pmsys_01"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "\n",
+    "reporting_01"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "minute_01 = pd.merge(calories_01, distance_01, how = 'outer', on = 'dateTime')"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    }
+   }
+  },
+  {
+   "cell_type": "markdown",
+   "source": [
+    "At the moment, we have the following tables:\n",
+    "\n",
+    "minute_01(calories and distance), 1 minute\n",
+    "heart_rate_01(heart rate), 5 seconds - we just need to calculate average HRV and then shift that into the dateTime format of our other tables\n",
+    "pmsys_01(wellness, srpe, injury), some sort of strange version of dateTime\n",
+    "master(lightly_active_minutes, moderately_active_minutes, very_active_minutes, sedentary_minutes, resting_heart_rate, steps, exercise, sleep), daily"
+   ],
+   "metadata": {
+    "collapsed": false,
+    "pycharm": {
+     "name": "#%% md\n"
+    }
+   }
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "outputs": [],
+   "source": [],
+   "metadata": {
+    "pycharm": {
+     "name": "#%%\n",
+     "is_executing": true
+    },
+    "id": "LxTr7Nvf0QOY"
+   }
+  }
+ ]
+}
