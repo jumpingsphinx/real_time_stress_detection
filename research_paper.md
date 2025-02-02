@@ -127,8 +127,6 @@ Given how hard it is to gather data on high school students due to privacy and l
 
 ## References
 
-# References
-
 Goldstein D. S. (2010). Adrenal responses to stress. Cellular and molecular neurobiology, 30(8), 1433-1440. https://doi.org/10.1007/s10571-010-9606-9
 
 Kang, M. G., Koh, S. B., Cha, B. S., Park, J. K., Woo, J. M., & Chang, S. J. (2004). Association between job stress on heart rate variability and metabolic syndrome in shipyard male workers. Yonsei medical journal, 45(5), 838-846. https://doi.org/10.3349/ymj.2004.45.5.838
