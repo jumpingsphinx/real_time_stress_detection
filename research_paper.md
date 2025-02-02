@@ -127,7 +127,27 @@ Given how hard it is to gather data on high school students due to privacy and l
 
 ## References
 
-[Full reference list]
+# References
+
+Goldstein D. S. (2010). Adrenal responses to stress. Cellular and molecular neurobiology, 30(8), 1433-1440. https://doi.org/10.1007/s10571-010-9606-9
+
+Kang, M. G., Koh, S. B., Cha, B. S., Park, J. K., Woo, J. M., & Chang, S. J. (2004). Association between job stress on heart rate variability and metabolic syndrome in shipyard male workers. Yonsei medical journal, 45(5), 838-846. https://doi.org/10.3349/ymj.2004.45.5.838
+
+Kim, H. G., Cheon, E. J., Bai, D. S., Lee, Y. H., & Koo, B. H. (2018). Stress and Heart Rate Variability: A Meta-Analysis and Review of the Literature. Psychiatry investigation, 15(3), 235-245. https://doi.org/10.30773/pi.2017.08.17
+
+Li, X., Hu, B., Shen, J., Xu, T., & Retcliffe, M. (2015). Mild Depression Detection of College Students: an EEG-Based Solution with Free Viewing Tasks. Journal of medical systems, 39(12), 187. https://doi.org/10.1007/s10916-015-0345-9
+
+Silva, E., Aguiar, J., Reis, L.P, Sá, J.O., Gonçalves, J., & Carvalho, V. (2020) Stress among Portuguese Medical Students: the EuStress Solution. Journal of Medical Systems 44, 45. https://doi.org/10.1007/s10916-019-1520-1
+
+Task Force of the European Society of Cardiology and the North American Society of Pacing and Electrophysiology. (1996). Heart rate variability: standards of measurement, physiological interpretation and clinical use. Circulation, 93(5), 1043-1065. https://doi.org/10.1161/01.CIR.93.5.1043
+
+Thambawita, V., Hicks, S.A., Borgli, H., Stensland, H.K., Jha, D., Svensen, M.K., Pettersen, S.A., Johansen, D., Johansen, H.D., Pettersen, S.D., Nordvang, S., Pedersen, S., Gjerdrum, A., Grønli, T.M., Fredriksen, P.M., Eg, R., Hansen, K., Fagernes, S., Claudi, C., Biørn-Hansen, A., Nguyen, D.T, Kupka, T, Hammer, H.L., Jain, R., Riegler, M.A., and Halvorsen, P (2020). PMData: a sports logging dataset. Proceedings of the 11th ACM Multimedia Systems Conference, 231-236. https://doi.org/10.1145/3339825.3394926
+
+Vrijkotte, T. G., van Doornen, L. J., & de Geus, E. J. (2000). Effects of work stress on ambulatory blood pressure, heart rate, and heart rate variability. Hypertension (Dallas, Tex. : 1979), 35(4), 880-886. https://doi.org/10.1161/01.hyp.35.4.880
+
+Yaribeygi, H., Panahi, Y., Sahraei, H., Johnston, T. P., & Sahebkar, A. (2017). The impact of stress on body function: A review. EXCLI journal, 16, 1057-1072. https://doi.org/10.17179/excli2017-480
+
+Zhu, J., Jiang, C., Chen, J., Lin, X., Yu, R., Li, X., & Hu, B. (2022). EEG based depression recognition using improved graph convolutional neural network. Computers in biology and medicine, 148, 105815. https://doi.org/10.1016/j.compbiomed.2022.105815
 
 [^1]: Before collection, each participant signed a form allowing the authors to collect and publish the data related to this project.
 [^2]: Using the common formula of 220 minus your age to find the max heartrate, Fitbit will calculate your maximum heart rate and then create three target heart rate zones—fat burn (50 to 69 percent of your max heart rate), cardio (70 to 84 percent of your max heart rate), and peak (85 to 100 percent of your max heart rate).
